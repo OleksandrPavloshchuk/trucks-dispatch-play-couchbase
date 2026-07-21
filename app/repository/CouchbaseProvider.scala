@@ -1,6 +1,6 @@
 package repository
 
-import com.couchbase.client.scala.{Bucket, Cluster, Collection, Scope}
+import com.couchbase.client.scala.{Cluster, Collection}
 import play.api.Configuration
 import play.api.libs.json.{Json, Writes}
 
@@ -40,48 +40,3 @@ class CouchbaseProvider @Inject()
   def save[T: Writes](collection: Collection, id: String, value: T): Unit =
     collection.insert(id, Json.toJson(value))
 }
-
-/*
-Наприклад, твій метод
-
-getMaxShipmentForCapacity(capacity)
-
-майже напевно перетвориться на щось на кшталт
-
-SELECT s.*
-FROM shipments AS s
-WHERE s.weight <= $capacity
-ORDER BY s.weight DESC
-LIMIT 1;
-
-А для вантажівок:
-
-SELECT t.*
-FROM trucks AS t
-WHERE t.capacity >= $weight
-ORDER BY t.capacity ASC
-LIMIT 1;
-
-/*
-import com.couchbase.client.scala.Cluster
-import com.couchbase.client.scala.query.QueryOptions
-
-val statement =
-  """
-    |SELECT s.*
-    |FROM shipments AS s
-    |WHERE s.weight <= $capacity
-    |ORDER BY s.weight DESC
-    |LIMIT 1
-    |""".stripMargin
-
-val result = cluster.query(
-  statement,
-  QueryOptions().parameters(JsonObject("capacity" -> capacity))
-).get
-
-val shipment =
-  result.rowsAs[Shipment].get.headOption
- */
-
- */
