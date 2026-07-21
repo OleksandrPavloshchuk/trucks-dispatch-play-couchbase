@@ -1,0 +1,2 @@
+POST    /td/shipment    controllers.CargoController.shipmentArrived
+POST    /td/truck       controllers.CargoController.truckArrived

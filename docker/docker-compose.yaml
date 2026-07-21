@@ -1,0 +1,12 @@
+services:
+  couchbase:
+    image: couchbase/server:enterprise
+    container_name: couchbase
+    restart: unless-stopped
+    ports:
+      - "8091-8096:8091-8096"
+      - "11210-11211:11210-11211"
+      
+    environment:
+      COUCHBASE_ADMINISTRATOR_USERNAME: Administrator
+      COUCHBASE_ADMINISTRATOR_PASSWORD: password
