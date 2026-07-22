@@ -17,7 +17,10 @@ class CouchbaseDispatchingRepository @Inject()
       """
         |SELECT s.*
         |FROM `td-bucket`.`td-scope`.`shipments` AS s
+        |LEFT JOIN `td-bucket`.`td-scope`.`assignments` AS a
+        |ON a.shipment.name = s.name
         |WHERE s.weight <= $capacity
+        |AND a IS MISSING
         |ORDER BY s.weight DESC
         |LIMIT 1;
         |""".stripMargin
@@ -34,7 +37,10 @@ class CouchbaseDispatchingRepository @Inject()
       """
         |SELECT t.*
         |FROM `td-bucket`.`td-scope`.`trucks` AS t
+        |LEFT JOIN `td-bucket`.`td-scope`.`assignments` AS a
+        |ON a.truck.name = t.name
         |WHERE t.capacity >= $weight
+        |AND a IS MISSING
         |ORDER BY t.capacity ASC
         |LIMIT 1;
         |""".stripMargin
@@ -48,7 +54,7 @@ class CouchbaseDispatchingRepository @Inject()
 
   override def saveAssignment(truck: Truck, shipment: Shipment): Assignment = {
     val assignment = Assignment(truck, shipment)
-    couchbase.save(couchbase.assignments, s"$truck.name:$shipment.name", assignment)
+    couchbase.save(couchbase.assignments, s"${truck.name}:${shipment.name}", assignment)
     assignment
   }
 
