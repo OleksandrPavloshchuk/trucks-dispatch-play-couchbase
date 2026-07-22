@@ -1,0 +1,11 @@
+CREATE BUCKET `td-bucket`;
+
+CREATE SCOPE `td-bucket`.`td-scope`;
+
+CREATE COLLECTION `td-bucket`.`td-scope`.`trucks`;
+CREATE COLLECTION `td-bucket`.`td-scope`.`shipments`;
+CREATE COLLECTION `td-bucket`.`td-scope`.`assignments`;
+
+CREATE PRIMARY INDEX ON `td-bucket`.`td-scope`.`trucks`;
+CREATE PRIMARY INDEX ON `td-bucket`.`td-scope`.`shipments`;
+CREATE PRIMARY INDEX ON `td-bucket`.`td-scope`.`assignments`;
