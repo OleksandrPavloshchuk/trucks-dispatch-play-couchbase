@@ -1,4 +1,4 @@
-package repository
+package repository.couchbase
 
 import com.couchbase.client.scala.{Cluster, Collection}
 import play.api.Configuration

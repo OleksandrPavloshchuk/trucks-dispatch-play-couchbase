@@ -1,5 +1,6 @@
 import com.google.inject.AbstractModule
-import repository.{CouchbaseDispatchingRepository, DispatchingRepository}
+import repository.DispatchingRepository
+import repository.couchbase.CouchbaseDispatchingRepository
 import services.{Dispatcher, DispatcherImpl}
 
 class Module extends AbstractModule {

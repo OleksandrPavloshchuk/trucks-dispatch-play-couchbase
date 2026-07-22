@@ -1,8 +1,8 @@
-package repository
+package repository.couchbase
 
 import com.couchbase.client.scala.query.{QueryOptions, QueryParameters}
 import domain.{Assignment, Shipment, Truck}
-import repository.couchbase.deserialize.{ShipmentDeserializer, TruckDeserializer}
+import repository.DispatchingRepository
 
 import javax.inject.{Inject, Singleton}
 
@@ -29,7 +29,7 @@ class CouchbaseDispatchingRepository @Inject()
       QueryParameters.Named("capacity" -> capacity))
     val queryResult = couchbase.cluster.query(statement, params).get
 
-    queryResult.rowsAs[Shipment](ShipmentDeserializer).get.headOption
+    queryResult.rowsAs[Shipment](new PlayJsonDeserializer[Shipment]).get.headOption
   }
 
   override def getMinTruckForWeight(weight: Double): Option[Truck] = {
@@ -49,7 +49,7 @@ class CouchbaseDispatchingRepository @Inject()
       QueryParameters.Named("weight" -> weight))
     val queryResult = couchbase.cluster.query(statement, params).get
 
-    queryResult.rowsAs[Truck](TruckDeserializer).get.headOption
+    queryResult.rowsAs[Truck](new PlayJsonDeserializer[Truck]).get.headOption
   }
 
   override def saveAssignment(truck: Truck, shipment: Shipment): Assignment = {
