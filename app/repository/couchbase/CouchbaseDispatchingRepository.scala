@@ -2,6 +2,7 @@ package repository.couchbase
 
 import com.couchbase.client.scala.query.{QueryOptions, QueryParameters}
 import domain.{Assignment, Shipment, Truck}
+import play.api.libs.json.Reads
 import repository.DispatchingRepository
 
 import javax.inject.{Inject, Singleton}
@@ -12,8 +13,8 @@ class CouchbaseDispatchingRepository @Inject()
   couchbase: CouchbaseProvider
 ) extends DispatchingRepository {
 
-  override def getMaxShipmentForCapacity(capacity: Double): Option[Shipment] = {
-    val statement =
+  override def getMaxShipmentForCapacity(capacity: Double): Option[Shipment] =
+    querySingle[Shipment](
       """
         |SELECT s.*
         |FROM `td-bucket`.`td-scope`.`shipments` AS s
@@ -23,17 +24,12 @@ class CouchbaseDispatchingRepository @Inject()
         |AND a IS MISSING
         |ORDER BY s.weight DESC
         |LIMIT 1;
-        |""".stripMargin
+        |""",
+      "capacity",
+      capacity)
 
-    val params = QueryOptions().parameters(
-      QueryParameters.Named("capacity" -> capacity))
-    val queryResult = couchbase.cluster.query(statement, params).get
-
-    queryResult.rowsAs[Shipment](new PlayJsonDeserializer[Shipment]).get.headOption
-  }
-
-  override def getMinTruckForWeight(weight: Double): Option[Truck] = {
-    val statement =
+  override def getMinTruckForWeight(weight: Double): Option[Truck] =
+    querySingle[Truck](
       """
         |SELECT t.*
         |FROM `td-bucket`.`td-scope`.`trucks` AS t
@@ -43,15 +39,24 @@ class CouchbaseDispatchingRepository @Inject()
         |AND a IS MISSING
         |ORDER BY t.capacity ASC
         |LIMIT 1;
-        |""".stripMargin
+      """,
+      "weight",
+      weight
+    )
 
+  private def querySingle[T: Reads]
+  (
+    statement: String,
+    varName: String,
+    value: Double
+  ): Option[T] = {
     val params = QueryOptions().parameters(
-      QueryParameters.Named("weight" -> weight))
-    val queryResult = couchbase.cluster.query(statement, params).get
+      QueryParameters.Named(varName -> value))
+    val queryResult = couchbase.cluster.query(statement.stripMargin, params).get
 
-    queryResult.rowsAs[Truck](new PlayJsonDeserializer[Truck]).get.headOption
+    queryResult.rowsAs[T](new PlayJsonDeserializer[T]).get.headOption
   }
-
+  
   override def saveAssignment(truck: Truck, shipment: Shipment): Assignment = {
     val assignment = Assignment(truck, shipment)
     couchbase.save(couchbase.assignments, s"${truck.name}:${shipment.name}", assignment)
